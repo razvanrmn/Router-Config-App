@@ -6,19 +6,27 @@
 
 #define MAX_SIZE 256
 
+#define ERR_CURL_GLOBAL_INIT_FAILED   -1
+#define ERR_CURL_EASY_INIT_FAILED     -2
+#define ERR_INVALID_PAYLOAD           -3
+#define ERR_CURL_PERFORM_FAILED       -4
+#define ERR_CURL_WS_SEND_FAILED       -5
+#define ERR_CURL_WS_RECV_FAILED       -6
+#define ERR_RECEIVED_DATA_TOO_LARGE   -7
+
 int init_curl(CURL **curl)
 {
     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
     if (res != CURLE_OK) {
         fprintf(stderr, "Error: curl_global_init() failed: %s\n", curl_easy_strerror(res));
-        return -1;
+        return ERR_CURL_GLOBAL_INIT_FAILED;
     }
 
     *curl = curl_easy_init();
     if (!*curl) {
         fprintf(stderr, "Error: curl_easy_init() failed\n");
         curl_global_cleanup();
-        return -1;
+        return ERR_CURL_EASY_INIT_FAILED;
     }
     return 0;
 }
@@ -47,7 +55,7 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
 {
     if (!send_payload_buffer || send_payload_size == 0) {
         fprintf(stderr, "Invalid payload buffer or size\n");
-        return -1;
+        return ERR_INVALID_PAYLOAD;
     }
 
     CURLcode res;
@@ -62,7 +70,7 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
     res = curl_easy_perform(curl);
 
     if (check_curl_result(res, curl, "curl_easy_perform() failed") != 0)
-        return -1;
+        return ERR_CURL_PERFORM_FAILED;
 
     res = curl_ws_send(curl,
                        (const char *)send_payload_buffer,
@@ -72,7 +80,7 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
                        CURLWS_BINARY);
 
     if (check_curl_result(res, curl, "curl_ws_send() failed") != 0)
-        return -1;
+        return ERR_CURL_WS_SEND_FAILED;
     printf("Sent %zu bytes.\n", sent);
 
     do {
@@ -83,14 +91,14 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
     } while (res == CURLE_AGAIN);
 
     if (check_curl_result(res, curl, "curl_ws_recv() failed") != 0)
-        return -1;
+        return ERR_CURL_WS_RECV_FAILED;
 
     if (rlen < sizeof(buffer)) {
         buffer[rlen] = '\0';
         printf("Received %zu bytes: %s\n", rlen, buffer);
     } else {
         fprintf(stderr, "Received data exceeds buffer size\n");
-        return -1;
+        return ERR_RECEIVED_DATA_TOO_LARGE;
     }
 
     uninit_curl(curl);
