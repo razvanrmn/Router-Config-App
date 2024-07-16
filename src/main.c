@@ -10,10 +10,12 @@
 #define MAX_BUFFER_SIZE 256
 
 void parse_query_string(char *query, char *obj_path, char *param, char *value, int *required) {
-    sscanf(query, "obj_path=%[^&]&param=%[^&]&value=%[^&]&required=%d", obj_path, param, value, required);
+    sscanf(query,
+    "obj_path=%[^&]&param=%[^&]&value=%[^&]&required=%d", obj_path, param, value, required);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     CURL *curl = NULL;
     uint8_t *send_payload_buffer = NULL;
     size_t send_payload_size = 0;
@@ -44,7 +46,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (create_protobuf_message(&send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
+    if (create_protobuf_message(
+        &send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
         printf("Error creating protobuf message\n");
         goto err_create_proto_msg;
     }

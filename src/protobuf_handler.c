@@ -3,7 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 
-int create_protobuf_message(uint8_t **buffer, size_t *size, const char *obj_path, const char *param, const char *value, int required) {
+int create_protobuf_message(
+    uint8_t **buffer,
+    size_t *size,
+    const char *obj_path,
+    const char *param,
+    const char *value,
+    int required) {
+
     Usp__Set set_message = USP__SET__INIT;
     Usp__Set__UpdateObject update_object = USP__SET__UPDATE_OBJECT__INIT;
 
@@ -14,7 +21,8 @@ int create_protobuf_message(uint8_t **buffer, size_t *size, const char *obj_path
 
     update_object.obj_path = strdup(obj_path);
     if (!update_object.obj_path) {
-        fprintf(stderr, "Error: Memory allocation failed for obj_path in create_protobuf_message\n");
+        fprintf(stderr, "Error: Memory allocation failed"
+        "for obj_path in create_protobuf_message\n");
         goto error_set_message;
     }
 
@@ -34,7 +42,8 @@ int create_protobuf_message(uint8_t **buffer, size_t *size, const char *obj_path
 
     update_object.param_settings = malloc(sizeof(Usp__Set__UpdateParamSetting *));
     if (!update_object.param_settings) {
-        fprintf(stderr, "Error: Memory allocation failed for param_settings in create_protobuf_message\n");
+        fprintf(stderr, "Error: Memory allocation failed"
+        "for param_settings in create_protobuf_message\n");
         goto cleanup_param_settings_value;
     }
     update_object.param_settings[0] = &param_setting;
@@ -42,7 +51,8 @@ int create_protobuf_message(uint8_t **buffer, size_t *size, const char *obj_path
 
     set_message.update_objs = malloc(sizeof(Usp__Set__UpdateObject *));
     if (!set_message.update_objs) {
-        fprintf(stderr, "Error: Memory allocation failed for update_objs in create_protobuf_message\n");
+        fprintf(stderr, "Error: Memory allocation failed"
+        "for update_objs in create_protobuf_message\n");
         goto cleanup_update_obj_param_settings;
     }
     set_message.update_objs[0] = &update_object;
