@@ -5,11 +5,11 @@
 #include <stdlib.h>
 
 int create_protobuf_message(
-    uint8_t **buffer,   // Changed to a pointer to a pointer
-    size_t *size,       // Changed to a pointer to size_t
+    uint8_t **buffer,
+    size_t *size,
     const char *obj_path,
     const char *param,
     const char *value,
-    int required);
+    const int required);
 
 #endif /* PROTOBUF_HANDLER_H */
