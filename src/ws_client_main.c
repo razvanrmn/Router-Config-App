@@ -36,13 +36,6 @@ int init() {
         return ERROR_CURL_INIT;
     }
 
-    send_payload_buffer = (uint8_t *)malloc(MAX_BUFFER_SIZE * sizeof(uint8_t));
-    if (!send_payload_buffer) {
-        fprintf(stderr, "Error allocating memory for send payload buffer\n");
-        curl_easy_cleanup(curl);
-        return ERROR_MEMORY_ALLOCATION;
-    }
-
     return 0;
 }
 
@@ -74,8 +67,7 @@ int handle_environment_input() {
             free(post_data);
         }
     } else {
-        fprintf(stderr, "Unsupported request method,"
-                "the supported request methods are POST / GET\n");
+        fprintf(stderr, "Unsupported request method, the supported request methods are POST / GET\n");
         return ERROR_UNSUPPORTED_METHOD;
     }
     return 0;
@@ -84,7 +76,7 @@ int handle_environment_input() {
 int handle_argument_input(int argc, char *argv[]) {
     if (argc < 3) {
         fprintf(stderr,
-                "Usage: %s [GET|POST]""obj_path=/path&param=parameter&value=somevalue&required=1\n",
+                "Usage: %s [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1\n",
                 argv[0]);
         return ERROR_MISSING_ARGUMENTS;
     }
@@ -98,32 +90,33 @@ int handle_argument_input(int argc, char *argv[]) {
     return 0;
 }
 
-
 int main(int argc, char *argv[]) {
+    int result = 0;
 
     if (getenv("REQUEST_METHOD"))
-        handle_environment_input();
-     else
-        handle_argument_input(argc, argv);
+        result = handle_environment_input();
+    else
+        result = handle_argument_input(argc, argv);
 
-    if (create_protobuf_message(&send_payload_buffer,
-                                &send_payload_size, obj_path, param, value, required)) {
-        printf("Error creating protobuf message\n");
-        free(send_payload_buffer);
-        return 1;
+    if (result != 0) {
+        return result;
+    }
+
+    if (create_protobuf_message(&send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
+        fprintf(stderr, "Error creating protobuf message\n");
+        return ERROR_CREATING_PROTOBUF;
     }
 
     if (init() != 0) {
         fprintf(stderr, "Failed to initialize resources\n");
-        free(send_payload_buffer);
-        return 1;
+        return ERROR_CURL_INIT;
     }
 
-    if (curl)
+    if (curl) {
         perform_ws_operations(curl, send_payload_buffer, send_payload_size);
+    }
 
     uninit();
-    free(send_payload_buffer);
 
     return 0;
 }
