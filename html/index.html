@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set Parameter</title>
+</head>
+<body>
+    <form action="/cgi-bin/ws_client.cgi" method="POST">
+        <label for="obj_path">Object Path:</label>
+        <input type="text" id="obj_path" name="obj_path"><br><br>
+        <label for="param">Parameter Name:</label>
+        <input type="text" id="param" name="param"><br><br>
+        <label for="value">Parameter Value:</label>
+        <input type="text" id="value" name="value"><br><br>
+        <label for="required">Required (1 for true, 0 for false):</label>
+        <input type="text" id="required" name="required"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
