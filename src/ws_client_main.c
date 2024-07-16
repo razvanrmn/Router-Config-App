@@ -7,6 +7,12 @@
 #include "usp-msg-1-3.pb-c.h"
 
 #define MAX_BUFFER_SIZE 256
+#define ERROR_CURL_INIT 1
+#define ERROR_MEMORY_ALLOCATION 2
+#define ERROR_UNSUPPORTED_METHOD 3
+#define ERROR_MISSING_ARGUMENTS 4
+#define ERROR_INVALID_METHOD 5
+#define ERROR_CREATING_PROTOBUF 6
 
 CURL *curl = NULL;
 uint8_t *send_payload_buffer = NULL;
@@ -27,14 +33,14 @@ int init() {
     curl = curl_easy_init();
     if (!curl) {
         fprintf(stderr, "Error initializing curl\n");
-        return 1;
+        return ERROR_CURL_INIT;
     }
 
     send_payload_buffer = (uint8_t *)malloc(MAX_BUFFER_SIZE * sizeof(uint8_t));
     if (!send_payload_buffer) {
         fprintf(stderr, "Error allocating memory for send payload buffer\n");
         curl_easy_cleanup(curl);
-        return 1;
+        return ERROR_MEMORY_ALLOCATION;
     }
 
     return 0;
@@ -51,22 +57,58 @@ void uninit() {
     }
 }
 
-int main(int argc, char *argv[]) {
+int handle_environment_input() {
+    char *method = getenv("REQUEST_METHOD");
+    if (method && strcmp(method, "GET") == 0) {
+        char *query = getenv("QUERY_STRING");
+        if (query) {
+            parse_query_string(query, obj_path, param, value, &required);
+        }
+    } else if (method && strcmp(method, "POST") == 0) {
+        int content_length = atoi(getenv("CONTENT_LENGTH"));
+        if (content_length > 0) {
+            char *post_data = malloc(content_length + 1);
+            fread(post_data, 1, content_length, stdin);
+            post_data[content_length] = '\0';
+            parse_query_string(post_data, obj_path, param, value, &required);
+            free(post_data);
+        }
+    } else {
+        fprintf(stderr, "Unsupported request method,"
+                "the supported request methods are POST / GET\n");
+        return ERROR_UNSUPPORTED_METHOD;
+    }
+    return 0;
+}
+
+int handle_argument_input(int argc, char *argv[]) {
     if (argc < 3) {
-        fprintf(stderr, "Usage: %s [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1\n", argv[0]);
-        return 1;
+        fprintf(stderr,
+                "Usage: %s [GET|POST]""obj_path=/path&param=parameter&value=somevalue&required=1\n",
+                argv[0]);
+        return ERROR_MISSING_ARGUMENTS;
     }
 
     if (strcmp(argv[1], "GET") != 0 && strcmp(argv[1], "POST") != 0) {
-        fprintf(stderr, "Unsupported request method: %s\n", argv[1]);
-        fprintf(stderr, "Supported methods are: GET, POST\n");
-        return 1;
+        fprintf(stderr, "Unsupported request the supported methods are: GET, POST: %s\n", argv[1]);
+        return ERROR_INVALID_METHOD;
     }
 
     parse_query_string(argv[2], obj_path, param, value, &required);
+    return 0;
+}
 
-    if (create_protobuf_message(&send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
-        fprintf(stderr, "Error creating protobuf message\n");
+
+int main(int argc, char *argv[]) {
+
+    if (getenv("REQUEST_METHOD"))
+        handle_environment_input();
+     else
+        handle_argument_input(argc, argv);
+
+    if (create_protobuf_message(&send_payload_buffer,
+                                &send_payload_size, obj_path, param, value, required)) {
+        printf("Error creating protobuf message\n");
         free(send_payload_buffer);
         return 1;
     }
@@ -77,9 +119,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (curl) {
+    if (curl)
         perform_ws_operations(curl, send_payload_buffer, send_payload_size);
-    }
 
     uninit();
     free(send_payload_buffer);
