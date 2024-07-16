@@ -21,8 +21,9 @@ int create_protobuf_message(
 
     update_object.obj_path = strdup(obj_path);
     if (!update_object.obj_path) {
-        fprintf(stderr, "Error: Memory allocation failed"
-        "for obj_path in create_protobuf_message\n");
+        fprintf(stderr,
+                "Error: Memory allocation failed"
+                "for obj_path in create_protobuf_message\n");
         goto error_set_message;
     }
 
