@@ -9,7 +9,7 @@ int create_protobuf_message(
     const char *obj_path,
     const char *param,
     const char *value,
-    int required) {
+    const int required) {
 
     Usp__Set set_message = USP__SET__INIT;
     Usp__Set__UpdateObject update_object = USP__SET__UPDATE_OBJECT__INIT;
