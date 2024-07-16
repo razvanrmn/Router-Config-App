@@ -16,28 +16,27 @@ char param[MAX_BUFFER_SIZE] = {0};
 char value[MAX_BUFFER_SIZE] = {0};
 int required = 0;
 
-void parse_query_string(char *query,
-                        char *obj_path,
-                        char *param,
-                        char *value,
-                        int *required) {
-    sscanf(query,
-    "obj_path=%[^&]&param=%[^&]&value=%[^&]&required=%d", obj_path, param, value, required);
+void parse_query_string(char *query, char *obj_path, char *param, char *value, int *required) {
+    sscanf(query, "obj_path=%[^&]&param=%[^&]&value=%[^&]&required=%d", obj_path, param, value, required);
 }
 
 int init() {
+    printf("Content-type: text/html\n\n");
+
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if (!curl) {
         fprintf(stderr, "Error initializing curl\n");
         return 1;
     }
+
     send_payload_buffer = (uint8_t *)malloc(MAX_BUFFER_SIZE * sizeof(uint8_t));
     if (!send_payload_buffer) {
         fprintf(stderr, "Error allocating memory for send payload buffer\n");
         curl_easy_cleanup(curl);
         return 1;
     }
+
     return 0;
 }
 
@@ -53,11 +52,8 @@ void uninit() {
 }
 
 int main(int argc, char *argv[]) {
-
-    if (argc < 2) {
-        fprintf(stderr,
-                "Usage: %s [GET|POST]"
-                "obj_path=/path&param=parameter&value=somevalue&required=1\n", argv[0]);
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1\n", argv[0]);
         return 1;
     }
 
@@ -67,15 +63,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (argc < 3) {
-        fprintf(stderr, "%s request requires a query string or data string argument\n", argv[1]);
-        return 1;
-    }
-
     parse_query_string(argv[2], obj_path, param, value, &required);
 
-    if (create_protobuf_message(
-        &send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
+    if (create_protobuf_message(&send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
         fprintf(stderr, "Error creating protobuf message\n");
         free(send_payload_buffer);
         return 1;
