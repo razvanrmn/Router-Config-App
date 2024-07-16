@@ -31,13 +31,13 @@ int create_protobuf_message(
     param_setting.param = strdup(param);
     if (!param_setting.param) {
         fprintf(stderr, "Error: Memory allocation failed for param in create_protobuf_message\n");
-        goto cleanup_update_obj_path;
+        goto error_update_obj_path;
     }
 
     param_setting.value = strdup(value);
     if (!param_setting.value) {
         fprintf(stderr, "Error: Memory allocation failed for value in create_protobuf_message\n");
-        goto cleanup_param_setting_param;
+        goto error_param_setting_param;
     }
     param_setting.required = required;
 
@@ -45,7 +45,7 @@ int create_protobuf_message(
     if (!update_object.param_settings) {
         fprintf(stderr, "Error: Memory allocation failed"
         "for param_settings in create_protobuf_message\n");
-        goto cleanup_param_settings_value;
+        goto error_param_settings_value;
     }
     update_object.param_settings[0] = &param_setting;
     update_object.n_param_settings = 1;
@@ -54,7 +54,7 @@ int create_protobuf_message(
     if (!set_message.update_objs) {
         fprintf(stderr, "Error: Memory allocation failed"
         "for update_objs in create_protobuf_message\n");
-        goto cleanup_update_obj_param_settings;
+        goto error_update_obj_param_settings;
     }
     set_message.update_objs[0] = &update_object;
     set_message.n_update_objs = 1;
@@ -63,25 +63,25 @@ int create_protobuf_message(
     *buffer = malloc(*size);
     if (!*buffer) {
         fprintf(stderr, "Error: Memory allocation failed for buffer in create_protobuf_message\n");
-        goto cleanup_set_message_update_objs;
+        goto error_set_message_update_objs;
     }
     usp__set__pack(&set_message, *buffer);
 
     return 0;
 
-cleanup_set_message_update_objs:
+error_set_message_update_objs:
     free(set_message.update_objs);
 
-cleanup_update_obj_param_settings:
+error_update_obj_param_settings:
     free(update_object.param_settings);
 
-cleanup_param_settings_value:
+error_param_settings_value:
     free(param_setting.value);
 
-cleanup_param_setting_param:
+error_param_setting_param:
     free(param_setting.param);
 
-cleanup_update_obj_path:
+error_update_obj_path:
     free(update_object.obj_path);
 
 error_set_message:
