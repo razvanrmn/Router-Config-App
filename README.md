@@ -32,9 +32,9 @@ Build the WebSocket Client and Server:
   Start the WebSocket server:
 
     cd /build
-    ./ws_server 8080
+    ./ws_server <port>
 
-  This starts the WebSocket server on port 8080.
+  This starts the WebSocket server on specified port, for example 8080.
 
 3. Deploying and Using the WebSocket Client
 
