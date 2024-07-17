@@ -53,16 +53,11 @@ Help and Running Parameters
         ./build/ws_client <method_type> obj_path=/path&param=parameter&value=somevalue&required=1
 
 Parameters:
-
--<method_type>: Specifies the HTTP method for sending data. Allowed values are GET or POST.
-
--obj_path: Path to the object on the server.
-
--param: Parameter to be passed to the server.
-
--value: Value associated with the parameter.
-
--required: Indicates whether the parameter is required. Use 1 for true, 0 for false.e).
+- <method_type>: Specifies the HTTP method for sending data. Allowed values are GET or POST.
+- obj_path: Path to the object on the server.
+- param: Parameter to be passed to the server.
+- value: Value associated with the parameter.
+- required: Indicates whether the parameter is required. Use 1 for true, 0 for false.e).
 
 Troubleshooting
 - Ensure all dependencies (libcurl, libprotobuf-c, libwebsockets) are installed and accessible to the build environment.
