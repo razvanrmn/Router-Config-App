@@ -29,22 +29,22 @@ Build the WebSocket Client and Server:
 
 Running the WebSocket Server
 
-    Start the WebSocket server:
+  Start the WebSocket server:
 
     cd /build
     ./ws_server 8080
 
-    This starts the WebSocket server on port 8080.
+  This starts the WebSocket server on port 8080.
 
 Deploying and Using the WebSocket Client
 
-    After building, install the WebSocket client to a CGI directory for web deployment:
+After building, install the WebSocket client to a CGI directory for web deployment:
 
     sudo make install
 
-    This command copies the compiled client (ws_client.cgi) to /var/www/html/cgi-bin.
+This command copies the compiled client (ws_client.cgi) to /var/www/html/cgi-bin.
 
-    Place the HTML interface (index.html) in your web server's document root (/var/www/html).
+Place the HTML interface (index.html) in your web server's document root (/var/www/html).
 
 Help and Running Parameters
 
@@ -53,18 +53,15 @@ To run the WebSocket client, use the following command format:
     ./build/ws_client [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1
 
 Parameters:
-
-    param1: Specifies the HTTP method (GET or POST) for sending data.
-    param2: Defines the query parameters (obj_path, param, value, required) to be sent to the server.
+- param1: Specifies the HTTP method (GET or POST) for sending data.
+- param2: Defines the query parameters (obj_path, param, value, required) to be sent to the server.
 
 Parameters Explained:
-
-    obj_path: Path to the object in the server.
-    param: Parameter to be passed to the server.
-    value: Value associated with the parameter.
-    required: Indicates whether the parameter is required (1 for true, 0 for false).
+- lobj_path: Path to the object in the server.
+- param: Parameter to be passed to the server.
+- value: Value associated with the parameter.
+- required: Indicates whether the parameter is required (1 for true, 0 for false).
 
 Troubleshooting
-
-    Ensure all dependencies (libcurl, libprotobuf-c, libwebsockets) are installed and accessible to the build environment.
-    Check permissions if encountering issues with file operations or web server integration
+- Ensure all dependencies (libcurl, libprotobuf-c, libwebsockets) are installed and accessible to the build environment.
+- Check permissions if encountering issues with file operations or web server integration
