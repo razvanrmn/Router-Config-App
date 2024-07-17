@@ -50,7 +50,7 @@ Help and Running Parameters
 
 To run the WebSocket client, use the following command format:
 
-./build/ws_client [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1
+    ./build/ws_client [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1
 
 Parameters:
 
