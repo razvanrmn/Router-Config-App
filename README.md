@@ -21,18 +21,18 @@ This program demonstrates a WebSocket client-server communication setup using C 
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   $ git clone <repository-url>
+   $ cd <repository-directory>
 Build the WebSocket Client and Server:
 
-    make
+    $ make
 
 2. Running the WebSocket Server
 
   Start the WebSocket server:
 
-    cd /build
-    ./ws_server <port>
+    $ cd /build
+    $ ./ws_server <port>
 
   This starts the WebSocket server on specified port, for example 8080.
 
@@ -40,7 +40,7 @@ Build the WebSocket Client and Server:
 
 After building, install the WebSocket client to a CGI directory for web deployment:
 
-    sudo make install
+    $ sudo make install
 
 This command copies the compiled client (ws_client.cgi) to /var/www/html/cgi-bin.
 
@@ -50,7 +50,7 @@ Help and Running Parameters
 
 4. To run the WebSocket client, use the following command format:
    
-        ./build/ws_client <method_type> obj_path=<path>&param=<param_val>&value=<value>&required=<is_required>
+        $ ./build/ws_client <method_type> obj_path=<path>&param=<param_val>&value=<value>&required=<is_required>
 
 Parameters:
 - <method_type>: Specifies the HTTP method for sending data. It should be either GET or POST.
