@@ -25,25 +25,20 @@ This program demonstrates a WebSocket client-server communication setup using C 
    cd <repository-directory>
 Build the WebSocket Client and Server:
 
-bash
-
     make
 
 Running the WebSocket Server
 
     Start the WebSocket server:
 
-    bash
-
-    ./build/ws_server
+    cd /build
+    ./ws_server 8080
 
     This starts the WebSocket server on port 8080.
 
 Deploying and Using the WebSocket Client
 
     After building, install the WebSocket client to a CGI directory for web deployment:
-
-    bash
 
     sudo make install
 
@@ -54,8 +49,6 @@ Deploying and Using the WebSocket Client
 Help and Running Parameters
 
 To run the WebSocket client, use the following command format:
-
-bash
 
 ./build/ws_client [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1
 
