@@ -27,7 +27,7 @@ Build the WebSocket Client and Server:
 
     make
 
-Running the WebSocket Server
+2. Running the WebSocket Server
 
   Start the WebSocket server:
 
@@ -36,7 +36,7 @@ Running the WebSocket Server
 
   This starts the WebSocket server on port 8080.
 
-Deploying and Using the WebSocket Client
+3. Deploying and Using the WebSocket Client
 
 After building, install the WebSocket client to a CGI directory for web deployment:
 
@@ -48,9 +48,9 @@ Place the HTML interface (index.html) in your web server's document root (/var/w
 
 Help and Running Parameters
 
-To run the WebSocket client, use the following command format:
-
-    ./build/ws_client [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1
+4. To run the WebSocket client, use the following command format:
+   
+        ./build/ws_client [GET|POST] obj_path=/path&param=parameter&value=somevalue&required=1
 
 Parameters:
 - param1: Specifies the HTTP method (GET or POST) for sending data.
