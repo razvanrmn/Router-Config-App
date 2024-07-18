@@ -2,8 +2,8 @@ CC = gcc
 CFLAGS = -I/usr/local/include -Isrc/include
 LDFLAGS = -lcurl -lprotobuf-c -lwebsockets
 SRC_DIR = src
-CLIENT_SRC = $(SRC_DIR)/main.c $(SRC_DIR)/protobuf_handler.c $(SRC_DIR)/wss_handler.c $(SRC_DIR)/include/usp-msg-1-3.pb-c.c
-SERVER_SRC = $(SRC_DIR)/ws_server.c
+CLIENT_SRC = $(SRC_DIR)/ws_client_main.c $(SRC_DIR)/protobuf_handler.c $(SRC_DIR)/wss_handler.c $(SRC_DIR)/include/usp-msg-1-3.pb-c.c
+SERVER_SRC = $(SRC_DIR)/ws_server_main.c
 
 BUILD_DIR = build
 CLIENT_OUT = $(BUILD_DIR)/ws_client
