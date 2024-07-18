@@ -56,16 +56,14 @@ static int callback_command_websockets(struct lws *wsi, enum lws_callback_reason
 
         printf("Received command: %s\n", command);
 
-        FILE *fp;
-        char output[BUFFER_BYTES];
-        fp = popen(command, "r");
-        if (fp == NULL) {
+        FILE *fp = popen(command, "r");
+        if (!fp) {
             fprintf(stderr, "Failed to execute command\n");
             return 1;
         }
 
+        char output[BUFFER_BYTES];
         fgets(output, sizeof(output), fp);
-
         pclose(fp);
 
         printf("Sending response: %s\n", output);
