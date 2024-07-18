@@ -104,3 +104,29 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
     uninit_curl(curl);
     return 0;
 }
+
+int send_command_over_websocket(CURL *curl, const char *command)
+{
+    if (!command) {
+        fprintf(stderr, "Invalid command\n");
+        return ERR_INVALID_PAYLOAD;
+    }
+
+    size_t command_len = strlen(command);
+
+    CURLcode res;
+    size_t sent = 0;
+
+    res = curl_ws_send(curl,
+                       command,
+                       command_len,
+                       &sent,
+                       0,
+                       CURLWS_TEXT);
+
+    if (check_curl_result(res, curl, "curl_ws_send() failed") != 0)
+        return ERR_CURL_WS_SEND_FAILED;
+    printf("Sent command: %s\n", command);
+
+    return 0;
+}

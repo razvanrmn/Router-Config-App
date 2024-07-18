@@ -44,7 +44,7 @@ int create_protobuf_message(
     update_object.param_settings = malloc(sizeof(Usp__Set__UpdateParamSetting *));
     if (!update_object.param_settings) {
         fprintf(stderr, "Error: Memory allocation failed"
-        "for param_settings in create_protobuf_message\n");
+                "for param_settings in create_protobuf_message\n");
         goto error_param_settings_value;
     }
     update_object.param_settings[0] = &param_setting;

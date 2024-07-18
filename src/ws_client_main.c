@@ -29,10 +29,16 @@ void parse_query_string(char *query, char *obj_path, char *param, char *value, i
 int init() {
     printf("Content-type: text/html\n\n");
 
-    curl_global_init(CURL_GLOBAL_ALL);
+    CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+    if (res != CURLE_OK) {
+        fprintf(stderr, "Error: curl_global_init() failed: %s\n", curl_easy_strerror(res));
+        return ERROR_CURL_INIT;
+    }
+
     curl = curl_easy_init();
     if (!curl) {
-        fprintf(stderr, "Error initializing curl\n");
+        fprintf(stderr, "Error: curl_easy_init() failed\n");
+        curl_global_cleanup();
         return ERROR_CURL_INIT;
     }
 
@@ -114,6 +120,13 @@ int main(int argc, char *argv[]) {
 
     if (curl) {
         perform_ws_operations(curl, send_payload_buffer, send_payload_size);
+
+        const char *command = "ba-cli";
+        result = send_command_over_websocket(curl, command);
+        if (result != 0) {
+            fprintf(stderr, "Failed to send command over WebSocket\n");
+            return result;
+        }
     }
 
     uninit();

