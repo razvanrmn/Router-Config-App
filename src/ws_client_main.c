@@ -99,10 +99,11 @@ int handle_argument_input(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     int result = 0;
 
-    if (getenv("REQUEST_METHOD"))
+    if (getenv("REQUEST_METHOD")) {
         result = handle_environment_input();
-    else
+    } else {
         result = handle_argument_input(argc, argv);
+    }
 
     if (result != 0) {
         return result;
@@ -119,12 +120,21 @@ int main(int argc, char *argv[]) {
     }
 
     if (curl) {
-        perform_ws_operations(curl, send_payload_buffer, send_payload_size);
+        result = perform_ws_operations(curl, send_payload_buffer, send_payload_size);
+        if (result != 0) {
+            fprintf(stderr, "Failed to perform WebSocket operations\n");
+            uninit();
+            return result;
+        }
 
-        const char *command = "ba-cli";
-        result = send_command_over_websocket(curl, command);
+        const char *command = "CMD:ls";
+        char response_buffer[MAX_BUFFER_SIZE] = {0};
+        size_t response_buffer_size = sizeof(response_buffer);
+
+        result = send_command_over_websocket("ws://localhost:8080/", (const uint8_t *)command, strlen(command), response_buffer, response_buffer_size);
         if (result != 0) {
             fprintf(stderr, "Failed to send command over WebSocket\n");
+            uninit();
             return result;
         }
     }
