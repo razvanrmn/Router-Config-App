@@ -2,116 +2,119 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #define BUFFER_BYTES 1024
 #define COMMAND_PREFIX "CMD:"
+#define COMMAND_MAX_LEN (BUFFER_BYTES - 6 - 30)
 
-static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
-{
-    switch (reason)
-    {
-    case LWS_CALLBACK_RECEIVE:
-    {
-        char *data = (char *)in;
+static void send_response(struct lws *wsi, const char *response) {
+    size_t response_len = strlen(response);
+    unsigned char *buf = (unsigned char *)malloc(LWS_PRE + response_len + 1);
+    if (!buf) {
+        fprintf(stderr, "Failed to allocate memory for response\n");
+        return;
+    }
+    memcpy(&buf[LWS_PRE], response, response_len);
+    buf[LWS_PRE + response_len] = '\0';
+    int write_result = lws_write(wsi, &buf[LWS_PRE], response_len, LWS_WRITE_TEXT);
+    free(buf);
+    if (write_result < 0) {
+        fprintf(stderr, "Failed to send response: %d\n", write_result);
+    }
+}
 
-        if (len > strlen(COMMAND_PREFIX) && memcmp(data, COMMAND_PREFIX, strlen(COMMAND_PREFIX)) == 0)
-        {
-            data += strlen(COMMAND_PREFIX);
-            len -= strlen(COMMAND_PREFIX);
+static void handle_command(struct lws *wsi, const char *command, size_t len) {
+    if (len >= COMMAND_MAX_LEN) {
+        send_response(wsi, "Command too long\n");
+        return;
+    }
 
-            char command[BUFFER_BYTES];
-            if (len >= sizeof(command)) {
-                fprintf(stderr, "Command too long\n");
-                return 1;
-            }
+    char cmd_with_redirect[BUFFER_BYTES];
+    int cmd_length = snprintf(cmd_with_redirect, sizeof(cmd_with_redirect),
+                              "%.*s 2>&1; echo $? > /tmp/command_exit_code",
+                              (int)len, command);
 
-            memcpy(command, data, len);
-            command[len] = '\0';
+    if (cmd_length >= sizeof(cmd_with_redirect)) {
+        send_response(wsi, "Command buffer overflow\n");
+        return;
+    }
 
-            printf("Received command: %s\n", command);
+    FILE *fp = popen(cmd_with_redirect, "r");
+    if (!fp) {
+        int err_code = errno;
+        char response[BUFFER_BYTES];
+        snprintf(response, sizeof(response), "Failed to execute command: %s (Error code: %d)\n",
+                 strerror(err_code), err_code);
+        send_response(wsi, response);
+        return;
+    }
 
-            FILE *fp = popen(command, "r");
-            if (!fp) {
-                fprintf(stderr, "Failed to execute command\n");
-                const char *response = "Failed to execute command\n";
-                size_t response_len = strlen(response);
+    char output[BUFFER_BYTES];
+    size_t total_len = 0;
+    unsigned char *buf = (unsigned char *)malloc(LWS_PRE + BUFFER_BYTES);
+    if (!buf) {
+        fprintf(stderr, "Failed to allocate memory for response\n");
+        pclose(fp);
+        return;
+    }
 
-                unsigned char *buf = (unsigned char *)malloc(LWS_PRE + response_len);
-                if (!buf) {
-                    fprintf(stderr, "Failed to allocate memory for response\n");
-                    return 1;
-                }
-
-                memcpy(&buf[LWS_PRE], response, response_len);
-                int write_result = lws_write(wsi, &buf[LWS_PRE], response_len, LWS_WRITE_TEXT);
-                free(buf);
-
-                if (write_result < 0) {
-                    fprintf(stderr, "Failed to send response: %d\n", write_result);
-                    return 1;
-                }
-
-                return 1;
-            }
-
-            char output[BUFFER_BYTES];
-            size_t total_len = 0;
-            unsigned char *buf = (unsigned char *)malloc(LWS_PRE + BUFFER_BYTES);
-            if (!buf) {
-                fprintf(stderr, "Failed to allocate memory for response\n");
+    while (fgets(output, sizeof(output), fp)) {
+        size_t output_len = strlen(output);
+        if (total_len + output_len >= BUFFER_BYTES) {
+            unsigned char *new_buf = (unsigned char *)realloc(buf, LWS_PRE + total_len + output_len + 1);
+            if (!new_buf) {
+                fprintf(stderr, "Failed to reallocate memory for response\n");
                 pclose(fp);
-                return 1;
+                free(buf);
+                return;
             }
-
-            while (fgets(output, sizeof(output), fp)) {
-                size_t output_len = strlen(output);
-
-                if (total_len + output_len >= BUFFER_BYTES) {
-                    buf = (unsigned char *)realloc(buf, LWS_PRE + total_len + output_len);
-                    if (!buf) {
-                        fprintf(stderr, "Failed to reallocate memory for response\n");
-                        pclose(fp);
-                        return 1;
-                    }
-                }
-
-                memcpy(&buf[LWS_PRE + total_len], output, output_len);
-                total_len += output_len;
-            }
-            pclose(fp);
-
-            int write_result = lws_write(wsi, &buf[LWS_PRE], total_len, LWS_WRITE_TEXT);
-            free(buf);
-
-            if (write_result < 0) {
-                fprintf(stderr, "Failed to send response: %d\n", write_result);
-                return 1;
-            }
+            buf = new_buf;
         }
-        else
+        memcpy(&buf[LWS_PRE + total_len], output, output_len);
+        total_len += output_len;
+    }
+
+    int exit_code = -1;
+    FILE *code_fp = fopen("/tmp/command_exit_code", "r");
+    if (code_fp) {
+        if (fscanf(code_fp, "%d", &exit_code) != 1) {
+            fprintf(stderr, "Failed to parse exit code\n");
+        }
+        fclose(code_fp);
+    }
+
+    char final_response[BUFFER_BYTES];
+    snprintf(final_response, sizeof(final_response), "%sExit code: %d", buf + LWS_PRE, exit_code);
+    send_response(wsi, final_response);
+
+    free(buf);
+    pclose(fp);
+}
+
+static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
+    const size_t command_prefix_len = strlen(COMMAND_PREFIX);
+
+    switch (reason) {
+    case LWS_CALLBACK_RECEIVE:
         {
-            printf("Received data: %.*s\n", (int)len, (char *)in);
+            char *data = (char *)in;
 
-            const char *response = "Message received";
-            size_t response_len = strlen(response);
+            if (len > command_prefix_len && memcmp(data, COMMAND_PREFIX, command_prefix_len) == 0) {
+                data += command_prefix_len;
+                len -= command_prefix_len;
+                char command[BUFFER_BYTES];
+                memcpy(command, data, len);
+                command[len] = '\0';
 
-            unsigned char *buf = (unsigned char *)malloc(LWS_PRE + response_len);
-            if (!buf) {
-                fprintf(stderr, "Failed to allocate memory for response\n");
-                return 1;
-            }
-
-            memcpy(&buf[LWS_PRE], response, response_len);
-            int write_result = lws_write(wsi, &buf[LWS_PRE], response_len, LWS_WRITE_TEXT);
-            free(buf);
-
-            if (write_result < 0) {
-                fprintf(stderr, "Failed to send response: %d\n", write_result);
-                return 1;
+                printf("Received command: %s\n", command);
+                handle_command(wsi, command, len);
+            } else {
+                printf("Received data: %.*s\n", (int)len, (char *)in);
+                send_response(wsi, "Message received");
             }
         }
         break;
-    }
 
     case LWS_CALLBACK_ESTABLISHED:
         printf("Connection established\n");
@@ -124,8 +127,10 @@ static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason
     default:
         break;
     }
+
     return 0;
 }
+
 
 static struct lws_protocols protocols[] = {
     {

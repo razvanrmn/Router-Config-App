@@ -127,7 +127,8 @@ int main(int argc, char *argv[]) {
             return result;
         }
 
-        const char *command = "CMD:ls";
+        // "CMD:ls *, r";
+        const char *command = "CMD:ba-cli";
         char response_buffer[MAX_BUFFER_SIZE] = {0};
         size_t response_buffer_size = sizeof(response_buffer);
 
