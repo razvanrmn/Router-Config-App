@@ -103,7 +103,12 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
     return 0;
 }
 
-int send_command_over_websocket(const char *url, const uint8_t *command, size_t command_size, char *response_buffer, size_t response_buffer_size)
+int send_command_over_websocket(
+    const char *url,
+    const uint8_t *command,
+    size_t command_size,
+    char *response_buffer,
+    size_t response_buffer_size)
 {
     if (!url || !command || command_size == 0 || !response_buffer || response_buffer_size == 0) {
         fprintf(stderr, "Invalid arguments\n");

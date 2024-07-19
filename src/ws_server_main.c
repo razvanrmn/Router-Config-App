@@ -62,7 +62,8 @@ static void handle_command(struct lws *wsi, const char *command, size_t len) {
     while (fgets(output, sizeof(output), fp)) {
         size_t output_len = strlen(output);
         if (total_len + output_len >= BUFFER_BYTES) {
-            unsigned char *new_buf = (unsigned char *)realloc(buf, LWS_PRE + total_len + output_len + 1);
+            unsigned char *new_buf = (
+                unsigned char *)realloc(buf, LWS_PRE + total_len + output_len + 1);
             if (!new_buf) {
                 fprintf(stderr, "Failed to reallocate memory for response\n");
                 pclose(fp);
@@ -92,7 +93,8 @@ static void handle_command(struct lws *wsi, const char *command, size_t len) {
     pclose(fp);
 }
 
-static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
+static int callback_websockets(
+    struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
     const size_t command_prefix_len = strlen(COMMAND_PREFIX);
 
     switch (reason) {

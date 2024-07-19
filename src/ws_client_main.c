@@ -73,7 +73,8 @@ int handle_environment_input() {
             free(post_data);
         }
     } else {
-        fprintf(stderr, "Unsupported request method, the supported request methods are POST / GET\n");
+        fprintf(stderr,
+                "Unsupported request method, the supported request methods are POST / GET\n");
         return ERROR_UNSUPPORTED_METHOD;
     }
     return 0;
@@ -109,7 +110,8 @@ int main(int argc, char *argv[]) {
         return result;
     }
 
-    if (create_protobuf_message(&send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
+    if (create_protobuf_message(
+        &send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
         fprintf(stderr, "Error creating protobuf message\n");
         return ERROR_CREATING_PROTOBUF;
     }
@@ -132,7 +134,13 @@ int main(int argc, char *argv[]) {
         char response_buffer[MAX_BUFFER_SIZE] = {0};
         size_t response_buffer_size = sizeof(response_buffer);
 
-        result = send_command_over_websocket("ws://localhost:8080/", (const uint8_t *)command, strlen(command), response_buffer, response_buffer_size);
+        result = send_command_over_websocket(
+            "ws://localhost:8080/",
+            (const uint8_t *)command,
+            strlen(command),
+            response_buffer,
+            response_buffer_size);
+
         if (result != 0) {
             fprintf(stderr, "Failed to send command over WebSocket\n");
             uninit();
