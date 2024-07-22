@@ -2,18 +2,91 @@
 <html>
 <head>
     <title>Set Parameter</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FAF1E4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        form {
+            background-color: #FFFFFF;
+            border: 1px solid #CEDEBD;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+        }
+        fieldset {
+            border: none;
+        }
+        legend {
+            font-size: 1.5em;
+            color: #435334;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #435334;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #CEDEBD;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: #F9F9F9;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #9EB384;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #435334;
+        }
+        input[type="submit"]:active {
+            background-color: #CEDEBD;
+        }
+        ::placeholder {
+            color: #999999;
+        }
+    </style>
 </head>
 <body>
     <form action="/cgi-bin/ws_client.cgi" method="POST">
-        <label for="obj_path">Object Path:</label>
-        <input type="text" id="obj_path" name="obj_path"><br><br>
-        <label for="param">Parameter Name:</label>
-        <input type="text" id="param" name="param"><br><br>
-        <label for="value">Parameter Value:</label>
-        <input type="text" id="value" name="value"><br><br>
-        <label for="required">Required (1 for true, 0 for false):</label>
-        <input type="text" id="required" name="required"><br><br>
-        <input type="submit" value="Submit">
+        <fieldset>
+            <legend>Set Parameter</legend>
+            <label for="obj_path">Object Path:</label>
+            <input type="text" id="obj_path" name="obj_path" placeholder="Enter object path" required><br>
+
+            <label for="param">Parameter Name:</label>
+            <input type="text" id="param" name="param" placeholder="Enter parameter name" required><br>
+
+            <label for="value">Parameter Value:</label>
+            <input type="text" id="value" name="value" placeholder="Enter parameter value" required><br>
+
+            <label for="required">Required (1 for true, 0 for false):</label>
+            <input type="number" id="required" name="required" placeholder="1 or 0" min="0" max="1" required><br>
+
+            <input type="submit" value="Submit">
+        </fieldset>
     </form>
 </body>
 </html>
