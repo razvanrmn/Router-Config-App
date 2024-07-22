@@ -1,7 +1,8 @@
 
-# WebSocket Client and Server with Protobuf Integration
+# Web Application For Router Configuration
 
 This program demonstrates a WebSocket client-server communication setup using C programming language. The client sends messages encoded with Protocol Buffers to a WebSocket server, which then processes and responds to these messages.
+Note: This project uses https://github.com/protobuf-c/protobuf-c for Protocol Buffers integration.
 
 ## Folder Structure
 
