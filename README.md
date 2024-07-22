@@ -1,3 +1,4 @@
+
 # WebSocket Client and Server with Protobuf Integration
 
 This program demonstrates a WebSocket client-server communication setup using C programming language. The client sends messages encoded with Protocol Buffers to a WebSocket server, which then processes and responds to these messages.
@@ -23,42 +24,65 @@ This program demonstrates a WebSocket client-server communication setup using C 
    ```bash
    $ git clone <repository-url>
    $ cd <repository-directory>
-Build the WebSocket Client and Server:
+   ```
 
-    $ make
+2. Build the WebSocket Client and Server:
 
-2. Running the WebSocket Server
+   ```bash
+   $ make
+   ```
 
-  Start the WebSocket server:
+### Running the WebSocket Server
 
-    $ cd /build
-    $ ./ws_server <port>
+Start the WebSocket server:
 
-  This starts the WebSocket server on specified port, for example 8080.
+```bash
+$ cd build
+$ ./ws_server <port>
+```
 
-3. Deploying and Using the WebSocket Client
+This starts the WebSocket server on the specified port, for example, 8080.
+
+### Deploying and Using the WebSocket Client
 
 After building, install the WebSocket client to a CGI directory for web deployment:
 
-    $ sudo make install
+```bash
+$ sudo make install
+```
 
-This command copies the compiled client (ws_client.cgi) to /var/www/html/cgi-bin.
+This command copies the compiled client (`ws_client.cgi`) to `/var/www/html/cgi-bin`.
 
-Place the HTML interface (index.html) in your web server's document root (/var/www/html).
+Place the HTML interface (`index.html`) in your web server's document root (`/var/www/html`).
 
-Help and Running Parameters
+## Help and Running Parameters
 
-4. To run the WebSocket client, use the following command format:
-   
-        $ ./build/ws_client <method_type> obj_path=<path>&param=<param_val>&value=<value>&required=<is_required>
+To run the WebSocket client, use the following command format:
 
-Parameters:
-- <method_type>: Specifies the HTTP method for sending data. It should be either GET or POST.
-- <path>: Path to the object on the server.
-- <param_val>: Parameter to be passed to the server.
-- <value>: Value associated with the parameter.
-- <is_required>: Indicates whether the parameter is required. Use 1 for true, 0 for false.
+```bash
+$ ./build/ws_client <method_type> obj_path=<path>&param=<param_val>&value=<value>&required=<is_required>
+```
 
-Troubleshooting
-- Ensure all dependencies (libcurl, libprotobuf-c, libwebsockets) are installed and accessible to the build environment.
+### Parameters:
+
+- `<method_type>`: Specifies the HTTP method for sending data. It should be either `GET` or `POST`.
+- `<path>`: Path to the object on the server.
+- `<param_val>`: Parameter to be passed to the server.
+- `<value>`: Value associated with the parameter.
+- `<is_required>`: Indicates whether the parameter is required. Use `1` for true, `0` for false.
+
+### Example
+
+```bash
+./ws_client GET obj_path=/devices/1&param=temperature&value=25&required=1
+```
+
+### Troubleshooting
+
+- Ensure all dependencies (`libcurl`, `libprotobuf-c`, `libwebsockets`) are installed and accessible to the build environment.
 - Check permissions if encountering issues with file operations or web server integration.
+
+## Makefile Commands
+
+- `make`: Compiles both `ws_client` and `ws_server`.
+- `make install`: Installs `ws_client` as a CGI script and copies `index.html` to a web directory.
