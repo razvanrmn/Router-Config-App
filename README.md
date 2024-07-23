@@ -87,3 +87,9 @@ $ ./build/ws_client <method_type> obj_path=<path>&param=<param_val>&value=<value
 
 - `make`: Compiles both `ws_client` and `ws_server`.
 - `make install`: Installs `ws_client` as a CGI script and copies `index.html` to a web directory.
+
+## Demo
+
+![My Image](img/test_a)
+
+![My Image](img/test_b)
