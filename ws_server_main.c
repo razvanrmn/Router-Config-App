@@ -84,7 +84,6 @@ static void handle_command(struct lws *wsi, const char *command, size_t len) {
         fclose(code_fp);
     }
 
-    // Format the final response with HTML
     char final_response[BUFFER_BYTES];
     snprintf(final_response, sizeof(final_response),
              "<p>Output:</p><pre>%s</pre><p>Exit code: %d</p>", buf + LWS_PRE, exit_code);
