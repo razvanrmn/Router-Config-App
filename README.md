@@ -12,7 +12,7 @@ Note: This project uses https://github.com/protobuf-c/protobuf-c for Protocol Bu
   - `wss_handler.c`: Handles WebSocket operations using libcurl and libwebsockets.
   - `ws_client_main.c`: Main program for the WebSocket client.
   - `ws_server_main.c`: Main program for the WebSocket server.
-  - `usp-msg-1-3.pb-c.c`: Implements Protocol Buffers message handling.
+  - `usp-msg-1-3.pb-c.c`: Implements Protocol Buffers message handling. https://github.com/protobuf-c/protobuf-c/blob/master/protobuf-c/protobuf-c.proto Used hash: "7df109917a2a9d25a23c9e3055bdedc444fa2b36"
 - `build/`: Directory where the executable binaries (`ws_client` and `ws_server`) are generated.
 - `html/`: Contains `index.html` for a basic web interface to interact with the WebSocket client.
 
