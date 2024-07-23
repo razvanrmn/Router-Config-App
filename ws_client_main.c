@@ -23,28 +23,50 @@ char value[MAX_BUFFER_SIZE] = {0};
 int required = 0;
 
 void generate_html_response(const char *message) {
-    printf("<!DOCTYPE html>\n");
-    printf("<html lang=\"en\">\n");
-    printf("<head>\n");
-    printf("<meta charset=\"UTF-8\">\n");
-    printf("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-    printf("<title>Response</title>\n");
-    printf("<style>\n");
-    printf("body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background-color: #FAF1E4; display: flex; justify-content: center; align-items: center; height: 100vh; }\n");
-    printf(".container { background-color: #FFFFFF; border: 1px solid #CEDEBD; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 600px; width: 90%%; }\n");
-    printf("h1 { color: #435334; font-size: 24px; margin-bottom: 20px; text-align: center; }\n");
-    printf("pre { background-color: #F9F9F9; border: 1px solid #CEDEBD; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }\n");
-    printf("</style>\n");
-    printf("</head>\n");
-    printf("<body>\n");
-    printf("<div class=\"container\">\n");
-    printf("<h1>Response</h1>\n");
-    printf("<pre>%s</pre>\n", message);
-    printf("</div>\n");
-    printf("</body>\n");
-    printf("</html>\n");
+    printf("<!DOCTYPE html>\n"
+           "<html lang=\"en\">\n"
+           "<head>\n"
+           "<meta charset=\"UTF-8\">\n"
+           "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+           "<title>Response</title>\n"
+           "<style>\n"
+           "body { font-family: 'Helvetica Neue', Arial, sans-serif;"
+           "margin: 0;"
+           "padding: 0;"
+           "background-color: #FAF1E4;"
+           "display: flex;"
+           "justify-content: center;"
+           "align-items: center;"
+           "height: 100vh; }\n"
+           ".container {"
+           "background-color: #FFFFFF;"
+           "border: 1px solid #CEDEBD;"
+           "padding: 20px;"
+           "border-radius: 10px;"
+           "box-shadow: 0 4px 8px rgba(0,0,0,0.1);"
+           "max-width: 600px; width: 90%%; }\n"
+           "h1 {"
+           "color: #435334;"
+           "font-size: 24px;"
+           "margin-bottom: 20px;"
+           "text-align: center; }\n"
+           "pre {"
+           "background-color: #F9F9F9;"
+           "border: 1px solid #CEDEBD;"
+           "padding: 15px;"
+           "border-radius: 5px;"
+           "white-space: pre-wrap;"
+           "word-wrap: break-word; }\n"
+           "</style>\n"
+           "</head>\n"
+           "<body>\n"
+           "<div class=\"container\">\n"
+           "<h1>Response</h1>\n"
+           "<pre>%s</pre>\n"
+           "</div>\n"
+           "</body>\n"
+           "</html>\n", message);
 }
-
 
 void parse_query_string(char *query, char *obj_path, char *param, char *value, int *required) {
     sscanf(
