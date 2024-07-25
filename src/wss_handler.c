@@ -79,13 +79,10 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
 
     if (check_curl_result(res, curl, "curl_ws_send() failed") != 0)
         return ERR_CURL_WS_SEND_FAILED;
-    printf("Sent %zu bytes.\n", sent);
+
 
     do {
         res = curl_ws_recv(curl, buffer, sizeof(buffer), &rlen, &meta);
-        if (res == CURLE_AGAIN) {
-           // fprintf(stderr, "curl_ws_recv() returned CURLE_AGAIN, retrying...\n");
-        }
     } while (res == CURLE_AGAIN);
 
     if (check_curl_result(res, curl, "curl_ws_recv() failed") != 0)
@@ -93,7 +90,6 @@ int perform_ws_operations(CURL *curl, const uint8_t *send_payload_buffer, size_t
 
     if (rlen < sizeof(buffer)) {
         buffer[rlen] = '\0';
-        printf("Received %zu bytes: %s\n", rlen, buffer);
     } else {
         fprintf(stderr, "Received data exceeds buffer size\n");
         return ERR_RECEIVED_DATA_TOO_LARGE;
@@ -140,13 +136,9 @@ int send_command_over_websocket(
         uninit_curl(curl);
         return ERR_CURL_WS_SEND_FAILED;
     }
-    printf("Sent %zu bytes.\n", sent);
 
     do {
         res = curl_ws_recv(curl, buffer, sizeof(buffer) - 1, &rlen, &meta);
-        if (res == CURLE_AGAIN) {
-            // fprintf(stderr, "curl_ws_recv() returned CURLE_AGAIN, retrying...\n");
-        }
     } while (res == CURLE_AGAIN);
 
     if (check_curl_result(res, curl, "curl_ws_recv() failed") != 0) {
@@ -162,8 +154,6 @@ int send_command_over_websocket(
 
     memcpy(response_buffer, buffer, rlen);
     response_buffer[rlen] = '\0';
-
-    printf("Received %zu bytes: %s\n", rlen, response_buffer);
 
     uninit_curl(curl);
 
