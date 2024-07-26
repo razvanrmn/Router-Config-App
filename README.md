@@ -2,7 +2,7 @@
 # Web Application For Router Configuration
 
 This program demonstrates a WebSocket client-server communication setup using C programming language. The client sends messages encoded with Protocol Buffers to a WebSocket server, which then processes and responds to these messages.
-Note: This project uses https://github.com/protobuf-c/protobuf-c for Protocol Buffers integration.
+Note: This project uses https://github.com/protobuf-c/protobuf-c for Protocol Buffers integration and TR-181 Device Data Model for CWMP Endpoints and USP Agents made by BroadBand https://device-data-model.broadband-forum.org/
 
 ## Folder Structure
 
