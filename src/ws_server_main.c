@@ -3,10 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 
 #define BUFFER_BYTES 1024
 #define COMMAND_PREFIX "CMD:"
 #define COMMAND_MAX_LEN (BUFFER_BYTES - 6 - 30)
+
+static char received_data[BUFFER_BYTES] = {0};
+volatile int exit_requested = 0;
+
+void handle_signal(int signal) {
+    exit_requested = 1;
+}
 
 static void send_response(struct lws *wsi, const char *response) {
     size_t response_len = strlen(response);
@@ -31,9 +39,9 @@ static void handle_command(struct lws *wsi, const char *command, size_t len) {
     }
 
     char cmd_with_redirect[BUFFER_BYTES];
-    int cmd_length = snprintf(cmd_with_redirect, sizeof(cmd_with_redirect),
-                              "%.*s 2>&1; echo $? > /tmp/command_exit_code",
-                              (int)len, command);
+    int cmd_length = snprintf(cmd_with_redirect, sizeof(cmd_with_redirect) - 1,
+                              "%.*s %s 2>&1; echo $? > /tmp/command_exit_code",
+                              (int)len, command, received_data);
 
     if (cmd_length >= sizeof(cmd_with_redirect)) {
         send_response(wsi, "<p>Command buffer overflow</p>");
@@ -86,7 +94,8 @@ static void handle_command(struct lws *wsi, const char *command, size_t len) {
 
     char final_response[BUFFER_BYTES];
     snprintf(final_response, sizeof(final_response),
-             "<p>Output:</p><pre>%s</pre><p>Exit code: %d</p>", buf + LWS_PRE, exit_code);
+             "<p>Output:</p><pre>%.*s</pre><p>Exit code: %d</p>", (int)total_len, buf + LWS_PRE, exit_code);
+
     send_response(wsi, final_response);
 
     free(buf);
@@ -103,19 +112,25 @@ static int callback_websockets(
             char *data = (char *)in;
 
             if (len > command_prefix_len && memcmp(data, COMMAND_PREFIX, command_prefix_len) == 0) {
-                data += command_prefix_len;
-                len -= command_prefix_len;
-                char command[BUFFER_BYTES];
-                memcpy(command, data, len);
-                command[len] = '\0';
+                 data += command_prefix_len;
+                 len -= command_prefix_len;
+                 char command[BUFFER_BYTES];
+                 memcpy(command, data, len);
+                 command[len] = '\0';
+                 printf("Received command: %s\n", command);
+                  handle_command(wsi, command, len);
+    } else {
 
-                printf("Received command: %s\n", command);
-                handle_command(wsi, command, len);
-            } else {
-                printf("Received data: %.*s\n", (int)len, (char *)in);
-                send_response(wsi, "<p>Message received</p>");
-            }
-        }
+        if (len >= BUFFER_BYTES)
+            len = BUFFER_BYTES - 1;
+
+        strncpy(received_data, (char *)in, len);
+        received_data[len] = '\0';
+        printf("Received data: %s\n", received_data);
+        send_response(wsi, "<p>Message received</p>");
+    }
+}
+
         break;
 
     case LWS_CALLBACK_ESTABLISHED:
@@ -143,14 +158,15 @@ static struct lws_protocols protocols[] = {
     {NULL, NULL, 0, 0}
 };
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     struct lws_context_creation_info info = {0};
 
     info.port = 8080;
     info.protocols = protocols;
     info.gid = -1;
     info.uid = -1;
+
+    signal(SIGINT, handle_signal);
 
     struct lws_context *context = lws_create_context(&info);
     if (!context) {
@@ -160,11 +176,11 @@ int main(int argc, char *argv[])
 
     printf("Starting server...\n");
 
-    while (1)
-    {
+    while (!exit_requested) {
         lws_service(context, 1000);
     }
 
+    printf("Exiting\n");
     lws_context_destroy(context);
     return 0;
 }
