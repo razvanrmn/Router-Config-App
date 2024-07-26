@@ -90,6 +90,6 @@ $ ./build/ws_client <method_type> obj_path=<path>&param=<param_val>&value=<value
 
 ## Demo
 
-![My Image](img/test_a)
+![My Image](img/test_a.png)
 
-![My Image](img/test_b)
+![My Image](img/test_b.png)
