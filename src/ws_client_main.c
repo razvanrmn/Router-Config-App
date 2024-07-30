@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
         return result;
     }
 
-    if (create_protobuf_message(
+    if (pack_protobuf_message(
         &send_payload_buffer, &send_payload_size, obj_path, param, value, required)) {
         fprintf(stderr, "Error creating protobuf message\n");
         return ERROR_CREATING_PROTOBUF;
@@ -176,6 +176,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (curl) {
+        printf("%.*s", (int)send_payload_size, send_payload_buffer);
         result = perform_ws_operations(curl, send_payload_buffer, send_payload_size);
         if (result != 0) {
             fprintf(stderr, "Failed to perform WebSocket operations\n");
@@ -185,7 +186,7 @@ int main(int argc, char *argv[]) {
 
         // "CMD:ls *, r";
         // "CMD:ba-cli"
-        const char *command = "CMD:ls";
+        const char *command = "CMD:echo";
         char response_buffer[MAX_BUFFER_SIZE] = {0};
         size_t response_buffer_size = sizeof(response_buffer);
 

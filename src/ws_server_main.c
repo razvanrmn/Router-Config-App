@@ -1,9 +1,11 @@
-#include <libwebsockets.h>
+#include "protobuf_handler.h"
+#include <usp-msg-1-3.pb-c.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <signal.h>
+#include <libwebsockets.h>
 
 #define BUFFER_BYTES 1024
 #define COMMAND_PREFIX "CMD:"
@@ -102,6 +104,27 @@ static void handle_command(struct lws *wsi, const char *command, size_t len) {
     pclose(fp);
 }
 
+static void handle_protobuf_message(struct lws *wsi, const uint8_t *protobuf_data, size_t len) {
+    char *obj_path = NULL;
+    char *param = NULL;
+    char *value = NULL;
+    int required = 0;
+
+    if (unpack_protobuf_message(protobuf_data, len, &obj_path, &param, &value, &required) == 0) {
+        char response[BUFFER_BYTES];
+        snprintf(response, sizeof(response),
+                 "Received Protobuf Message: Object Path: %s, Param: %s, Value: %s, Required: %d",
+                 obj_path, param, value, required);
+        send_response(wsi, response);
+
+        free(obj_path);
+        free(param);
+        free(value);
+    } else {
+        send_response(wsi, "<p>Failed to unpack Protobuf message</p>");
+    }
+}
+
 static int callback_websockets(
     struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
     const size_t command_prefix_len = strlen(COMMAND_PREFIX);
@@ -112,25 +135,24 @@ static int callback_websockets(
             char *data = (char *)in;
 
             if (len > command_prefix_len && memcmp(data, COMMAND_PREFIX, command_prefix_len) == 0) {
-                 data += command_prefix_len;
-                 len -= command_prefix_len;
-                 char command[BUFFER_BYTES];
-                 memcpy(command, data, len);
-                 command[len] = '\0';
-                 printf("Received command: %s\n", command);
-                  handle_command(wsi, command, len);
-    } else {
+                data += command_prefix_len;
+                len -= command_prefix_len;
+                char command[BUFFER_BYTES];
+                memcpy(command, data, len);
+                command[len] = '\0';
+                printf("Received command: %s\n", command);
+                handle_command(wsi, command, len);
+            } else {
+                if (len >= BUFFER_BYTES)
+                    len = BUFFER_BYTES - 1;
 
-        if (len >= BUFFER_BYTES)
-            len = BUFFER_BYTES - 1;
+                strncpy(received_data, (char *)in, len);
+                received_data[len] = '\0';
+                printf("Received data: %s\n", received_data);
 
-        strncpy(received_data, (char *)in, len);
-        received_data[len] = '\0';
-        printf("Received data: %s\n", received_data);
-        send_response(wsi, "<p>Message received</p>");
-    }
-}
-
+                handle_protobuf_message(wsi, (const uint8_t *)received_data, len);
+            }
+        }
         break;
 
     case LWS_CALLBACK_ESTABLISHED:

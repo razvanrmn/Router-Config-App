@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int create_protobuf_message(
+int pack_protobuf_message(
     uint8_t **buffer,
     size_t *size,
     const char *obj_path,
@@ -66,7 +66,6 @@ int create_protobuf_message(
         goto error_set_message_update_objs;
     }
     usp__set__pack(&set_message, *buffer);
-
     return 0;
 
 error_set_message_update_objs:
@@ -87,3 +86,68 @@ error_update_obj_path:
 error_set_message:
     return 1;
 }
+
+int unpack_protobuf_message(
+    const uint8_t *buffer,
+    size_t size,
+    char **obj_path,
+    char **param,
+    char **value,
+    int *required) {
+
+    Usp__Set *set_message = NULL;
+    Usp__Set__UpdateObject *update_object = NULL;
+    Usp__Set__UpdateParamSetting *param_setting = NULL;
+
+    set_message = usp__set__unpack(NULL, size, buffer);
+    if (!set_message) {
+        fprintf(stderr, "Error: Failed to unpack protobuf message\n");
+        return 1;
+    }
+
+    if (set_message->n_update_objs == 0 || set_message->update_objs[0]->n_param_settings == 0) {
+        fprintf(stderr, "Error: No update objects or param settings in unpacked message\n");
+        usp__set__free_unpacked(set_message, NULL);
+        return 1;
+    }
+
+    update_object = set_message->update_objs[0];
+    param_setting = update_object->param_settings[0];
+
+    *obj_path = strdup(update_object->obj_path);
+    if (!*obj_path) {
+        fprintf(stderr,
+                "Error: Memory allocation failed for obj_path in unpack_protobuf_message\n");
+        goto error_free_unpacked;
+    }
+
+    *param = strdup(param_setting->param);
+    if (!*param) {
+        fprintf(stderr, "Error: Memory allocation failed for param in unpack_protobuf_message\n");
+        goto error_free_obj_path;
+    }
+
+    *value = strdup(param_setting->value);
+    if (!*value) {
+        fprintf(stderr, "Error: Memory allocation failed for value in unpack_protobuf_message\n");
+        goto error_free_param;
+    }
+
+    *required = param_setting->required;
+
+    usp__set__free_unpacked(set_message, NULL);
+
+    return 0;
+
+error_free_param:
+    free(*param);
+
+error_free_obj_path:
+    free(*obj_path);
+
+error_free_unpacked:
+    usp__set__free_unpacked(set_message, NULL);
+
+    return 1;
+}
+
